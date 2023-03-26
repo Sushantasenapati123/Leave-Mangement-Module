@@ -1,0 +1,426 @@
+﻿
+
+
+@{
+    ViewData["Title"] = "AddDoctor";
+
+
+
+   
+}
+<body style="background-color:darkslategrey">
+    <div class="page-title">
+        <div class="title-details">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb p-0 mb-0 bg-transparent" id="navigation">
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12">
+            <div class="card">
+                <div class="card-header" style="color:red">
+
+                    <div class="indicatorslist">
+                        <a title="" href="javascript:void(0)" id="backIcon" data-toggle="tooltip" data-placement="top" data-original-title="Back"><i class="icon-arrow-left1"></i></a>
+                        <center style="color: ; background-color:darkslateblue "><u><h2>Leave Application Form</h2></u></center>
+                    </div>
+                </div>
+                @*----------*@
+
+                <!-- BASIC FORM ELEMENTS -->
+                <!--===================================================-->
+                <div class="card-body" style="background-color:aquamarine">
+
+                    <div class="row">
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <label class="control-label">Emp Code</label>
+                            <input id="Emp_Code" class="form-control" onblur="myFunction()" />
+
+
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <label class="control-label">Emp Name</label>
+                            <input id="Emp_nam" class="form-control" readonly />
+
+
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <label class="control-label">Designation</label>
+                            <input id="Emp_desig" class="form-control" readonly />
+
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label class="control-label">Leave Type</label>
+                            <select id="Leave_Type" class="form-control" onchange="hidedoc()" asp-items="@(new SelectList(ViewBag.LeaveType,"id","Leave_Type"))">
+                            </select>
+
+                        </div>
+
+                        <div class="form-group col-md-6" style="display:none" id="doc">
+                            <label class="control-label">Document</label>
+                            <input id="Documents" type="file" class="form-control" />
+                            <span id="lblError" style="color:red"></span>
+                        </div>
+
+
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-md-5">
+                            <label class="control-label">From Date</label>
+                            <input id="FROM_DATE" class="form-control " type="date" />
+
+                        </div>
+
+                        <div class="form-group col-md-5">
+                            <label class="control-label">To date</label>
+                            <input id="TO_DATE" class="form-control " type="date" onblur="findDay()" />
+                        </div>
+                        <div class="form-group col-md-2">
+
+                            <label id="daycount" style="margin-top:35px"></label>
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label class="control-label">Reason</label>
+                            <textarea class="form-control" id="Reason"></textarea>
+
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="control-label"></label>
+                            <table border="1" style="border: 1px solid">
+                                <tr style="text-align:center">
+                                    <th style="height: 25px; width: 150px;" colspan="2">EmploYee Leave Status</th>
+
+                                </tr>
+                                <tr style="text-align:left">
+                                    <th style="height: 25px; width: 150px">ML</th>
+                                    <th style="height: 25px; width: 150px ">CL</th>
+                                </tr>
+                                <tr style="text-align:left">
+                                    <td style="height: 25px; width: 150px"><span id="ml"></span></td>
+                                    <td style="height: 25px; width: 150px "><span id="cl"></span></td>
+                                </tr>
+                            </table>
+
+                        </div>
+                        <div class="form-group col-md-12">
+                            <button class="btn btn-primary mb-1" id="btnSubmit" style="margin-left: 450px; margin-top: 50px">Apply</button>
+                            <button class="btn btn-danger mb-1" id="btnCancel" style="margin-top:50px">Reset</button>
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+
+    </div>
+
+</body>
+
+
+
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/validation/validation.js"></script>
+
+<script>
+
+
+    function hidedoc() {
+        if ($("#Leave_Type").val() == 1) {
+            $("#doc").show();
+        }
+        else
+            $("#doc").hide();
+
+    }
+
+
+
+
+
+    function validate() {
+
+        debugger
+        var currentDate = new Date();
+        currentDate.setDate(currentDate.getDate() - 16);
+        var selectedDate = new Date(Date.parse($('#FROM_DATE').val()));
+
+
+        var currentDateCasual = new Date();
+        currentDateCasual.setDate(currentDateCasual.getDate()-1);
+
+
+
+        if ($('#Emp_Code').val() == "") {
+            alert("Please Enter Employee Code !");
+            return false;
+            $('#Emp_Code').focus();
+        }
+       else if ($('#Leave_Type').val() == "0") {
+            alert("Please Select Leave Type !");
+            return false;
+            $('#Leave_Type').focus();
+        }
+
+        else if ($('#Documents').val() == "" && $("#Leave_Type").val() == 1) {
+            alert("Please Upload Document");
+                return false;
+        }
+        else if ($('#FROM_DATE').val() == "") {
+            alert("Please Enter FROM_DATE !");
+            return false;
+            $('#FROM_DATE').focus();
+        }
+        else if ($('#TO_DATE').val() == "") {
+            alert("Please Enter ToDate !");
+            $('#TO_DATE').focus();
+            return false;
+        }
+        else if ($('#TO_DATE').val() < $('#FROM_DATE').val()) {
+            alert("To Date Must Be Greater than From Date");
+            $('#TO_DATE').focus();
+            return false;
+        }
+        else if (selectedDate < currentDate && $("#Leave_Type").val() == 1) {
+
+            alert("Medical leave can only be applied for same date or back dates (with in past 15 days from application date");
+
+
+            return false;
+        }
+        else if (selectedDate < currentDateCasual && $("#Leave_Type").val() == 2) {
+
+            alert("casual leaves can only be future dates including application date");
+
+
+            return false;
+        }
+
+
+
+
+
+
+        else if ($('#Reason').val() == "") {
+            alert("Please Enter Reason !");
+            return false;
+            $('#Reason').focus();
+        }
+
+        else
+            return true;
+
+
+
+    }
+    function reset() {
+        $('#Emp_Code').val("");
+        $("#FROM_DATE").val("");
+        $("#TO_DATE").val("");
+        $("#Reason").val("");
+
+        $("#Emp_nam").val("");
+        $("#Emp_desig").val("");
+
+        $("#Leave_Type").val("0");
+
+    }
+    $("#btnCancel").click(function () { reset() });
+
+    function findDay() {
+
+        $("#daycount").html('(Apply for '+GetDays()+' Days)');
+
+    }
+
+    function GetDays() {
+        var dropdt = new Date(document.getElementById("TO_DATE").value);
+        var pickdt = new Date(document.getElementById("FROM_DATE").value);
+        return parseInt((dropdt - pickdt) / (24 * 3600 * 1000))+1;
+    }
+
+
+    $("#btnSubmit").click(function () {
+
+        var doc = {
+            Emp_Code: $("#Emp_Code").val(),
+            Emp_nam: $("#Emp_nam").val(),
+            Emp_desig: $("#Emp_desig").val(),
+            Leave_Type: $("#Leave_Type").val(),
+            Documents: $("#Documents").val(),
+            FROM_DATE: $("#FROM_DATE").val(),
+            TO_DATE: $("#TO_DATE").val(),
+            Reason: $("#Reason").val(),
+
+
+        };
+        if (validate() == true) {
+
+
+
+
+
+
+        $.ajax({
+            url: "/Leave/Add",
+            data: doc,
+            type: "POST",
+            success: function (result) {
+                debugger
+                if (result == "Record Saved Successfully") {
+                    alert(result);
+                    Upload();
+                    window.location.href = "/Leave/LeaveApplicationForm";
+
+                }
+
+                else
+                    alert(result);
+
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
+
+         }
+
+
+    });
+    function Upload() {
+         if ($('#Documents').val() != '') {
+                var files = $('#Documents').prop("files");
+
+                //var url = "Sport/UploadImage";
+                formData = new FormData();
+                formData.append("MyUploader", files[0]);
+                //alert(files[0]);
+                jQuery.ajax({
+                    type: 'POST',
+
+                    url:  '@Url.Action("UploadImage", "Leave")',
+                    data: formData,
+                    type: 'POST',
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    dataType: "json",
+
+                    success: function (data) {
+                        if (data.status == "success") {
+
+                        }
+                    },
+
+                });
+
+            }
+    }
+    var dnam;
+    //UPDATE
+    function myFunction() {
+        debugger
+        $.ajax({
+            url: "/Leave/BindEmployee?clubid=" + $('#Emp_Code').val(),
+            typr: "GET",
+            contentType: "application/json;charset=UTF-8",
+            dataType: "json",
+            success: function (result) {
+                if (result[0] != undefined) {
+                    $("#Emp_nam").val(result[0].Emp_Name);
+                    $("#Emp_desig").val(result[0].DesignationName);
+                    dnam = result[0].DesignationName;
+                    fil_Leave_Status();
+                }
+                else
+                    alert("No Record Found");
+
+
+
+
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
+
+
+    }
+
+    function fil_Leave_Status() {
+
+        $.ajax({
+            url: "/Leave/BindleaveStatus?clubid=" + $('#Emp_Code').val(),
+            typr: "GET",
+            contentType: "application/json;charset=UTF-8",
+            dataType: "json",
+            success: function (result) {
+                debugger
+
+                if (dnam == "MGR") {
+                    $("#cl").html(result[0].restCL + '/' + '12')
+                    $("#ml").html(result[0].restML + '/' + '12')
+                }
+                if (dnam == "SSD") {
+                    $("#cl").html(result[0].restCL + '/' + '10')
+                    $("#ml").html(result[0].restML + '/' + '10')
+                }
+                if (dnam == "SD") {
+                    $("#cl").html(result[0].restCL + '/' + '8')
+                    $("#ml").html(result[0].restML + '/' + '8')
+                }
+
+
+                $("#restML").val(result[0].restML);
+                $("#restCL").val(result[0].restCL);
+
+
+
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
+    }
+
+
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#img').attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    $("#Image").change(function () {
+        readURL(this);
+    });
+
+
+
+    //DELETE
+
+</script>

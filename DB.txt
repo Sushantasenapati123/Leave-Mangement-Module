@@ -1,0 +1,315 @@
+USE [chikun1]
+GO
+/****** Object:  StoredProcedure [dbo].[Emp_Leave]    Script Date: 26-03-2023 21:49:59 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER proc [dbo].[Emp_Leave]
+(@Emp_Code int=0,
+@LeaveTyp_id int=0,
+@Documents varchar(50)=null,
+@Leave_day int=0,
+@FROM_DATE date=null,
+@TO_DATE date=null,
+@Reason varchar(50)=null,
+@mode varchar(30),
+
+@PMSGOUT varchar(100)=null output
+)
+as
+begin
+    IF(@mode='BindEmployee')
+		BEGIN
+		   select Emp_Name,DesignationName from Employee_Record_L where Emp_Code=@Emp_Code 
+		end
+	else IF(@mode='BindLeave')
+		BEGIN
+		   select * from Leave_Type 
+		end
+	else IF(@mode='LeaveStatus')
+    BEGIN
+		declare @desig varchar(20)
+		declare @desigid int
+		select @desig=DesignationName from Employee_Record_L where Emp_Code=@Emp_Code
+		select @desigid=designatin_id from Designation_Leave where Designation_NAme=@desig
+
+		select (select ML from Leave_Record where designatin_id=@desigid)-
+		isnull(sum(Leave_day),0) as restML,(select (select CL from Leave_Record where designatin_id=@desigid)-
+		isnull(sum(Leave_day),0) as resetCL from Employee_Leave where LeaveTyp_id=2 and Emp_Code=@Emp_Code) as restCL from Employee_Leave where LeaveTyp_id=1 and Emp_Code=@Emp_Code 
+	end
+	else IF(@mode='insert')
+	select * from Employee_Record_L
+		BEGIN
+		   declare @designam varchar(20)
+		   declare @desigidd int
+		   select @designam=DesignationName from Employee_Record_L where Emp_Code=@Emp_Code
+		   select @desigidd=designatin_id from Designation_Leave where Designation_NAme=@designam
+
+		   IF(@designam<>'MGR')
+						BEGIN
+									IF(@LeaveTyp_id=1)
+									BEGIN
+											IF(DATEDIFF(day, @FROM_DATE, @TO_DATE)+1 > 1)
+												BEGIN
+													SET @PMSGOUT='2'
+												END
+											ELSE
+												BEGIN
+
+												declare @desig1 varchar(20)
+												declare @desigid1 int
+												declare @limit int
+												select @desig1=DesignationName from Employee_Record_L where Emp_Code=@Emp_Code
+												select @desigid1=designatin_id from Designation_Leave where Designation_NAme=@desig1
+												select @limit=(select ML from Leave_Record where designatin_id=@desigid1)-
+											    isnull(	sum(Leave_day),0) from Employee_Leave where LeaveTyp_id=1 and Emp_Code=@Emp_Code 
+													if(@limit-DATEDIFF(day, @FROM_DATE, @TO_DATE)>0)
+														begin
+															INSERT INTO Employee_Leave(Emp_Code, LeaveTyp_id, Documents, Leave_day, Reason,FROM_DATE,TO_DATE)
+															VALUES(@Emp_Code,@LeaveTyp_id,@Documents,DATEDIFF(day, @FROM_DATE, @TO_DATE)+1,@Reason,@FROM_DATE,@TO_DATE)
+															SET @PMSGOUT='1'
+														end
+													else
+														  begin
+														     SET @PMSGOUT='3'
+														  end
+												END
+									END
+									ELSE IF(@LeaveTyp_id=2)
+										BEGIN
+												IF(DATEDIFF(day, @FROM_DATE, @TO_DATE)+1 > 3)
+													BEGIN
+														SET @PMSGOUT='2'
+													END
+												ELSE
+													BEGIN
+
+													declare @desig2 varchar(20)
+												    declare @desigid2 int
+												    declare @limit1 int
+												    select @desig2=DesignationName from Employee_Record_L where Emp_Code=@Emp_Code
+												    select @desigid2=designatin_id from Designation_Leave where Designation_NAme=@desig2
+												    select @limit1=(select CL from Leave_Record where designatin_id=@desigid2)-
+											        isnull(	sum(Leave_day),0) from Employee_Leave where LeaveTyp_id=2 and Emp_Code=@Emp_Code 
+													    if(@limit1-DATEDIFF(day, @FROM_DATE, @TO_DATE)>0)
+															begin
+																INSERT INTO Employee_Leave(Emp_Code, LeaveTyp_id, Documents, Leave_day, Reason,FROM_DATE,TO_DATE)
+																VALUES(@Emp_Code,@LeaveTyp_id,@Documents,DATEDIFF(day, @FROM_DATE, @TO_DATE)+1,@Reason,@FROM_DATE,@TO_DATE)
+																SET @PMSGOUT='1'
+															end
+														else
+															  begin
+																 SET @PMSGOUT='3'
+															  end
+													END
+				
+										END
+								
+
+					   END
+
+
+			ELSE
+
+
+				   BEGIN
+							   BEGIN
+										IF(@LeaveTyp_id=1)
+		     								 BEGIN
+																IF(DATEDIFF(day, @FROM_DATE, @TO_DATE)+1 > 2)
+																	BEGIN
+																		SET @PMSGOUT='2'
+																	END
+																ELSE
+																	BEGIN
+
+																	declare @desig3 varchar(20)
+												                    declare @desigid3 int
+												                    declare @limit3 int
+												                    select @desig3=DesignationName from Employee_Record_L where Emp_Code=@Emp_Code
+												                    select @desigid3=designatin_id from Designation_Leave where Designation_NAme=@desig3
+																	select @limit3=(select ML from Leave_Record where designatin_id=@desigid3)-
+																	isnull(	sum(Leave_day),0) from Employee_Leave where LeaveTyp_id=1 and Emp_Code=@Emp_Code 
+												
+																		if(@limit3-DATEDIFF(day, @FROM_DATE, @TO_DATE)>0)
+																			begin
+																				INSERT INTO Employee_Leave(Emp_Code, LeaveTyp_id, Documents, Leave_day, Reason,FROM_DATE,TO_DATE)
+																				VALUES(@Emp_Code,@LeaveTyp_id,@Documents,DATEDIFF(day, @FROM_DATE, @TO_DATE)+1,@Reason,@FROM_DATE,@TO_DATE)
+																				SET @PMSGOUT='1'
+																			end
+																		else
+																			  begin
+																				 SET @PMSGOUT='3'
+																			  end
+
+																	END
+											END
+														ELSE IF(@LeaveTyp_id=2)
+														BEGIN
+																IF(DATEDIFF(day, @FROM_DATE, @TO_DATE)+1 > 4)
+																	BEGIN
+																		SET @PMSGOUT='2'
+																	END
+																ELSE
+																	BEGIN
+
+																		declare @desig4 varchar(20)
+																		declare @desigid4 int
+																		declare @limit4 int
+																		select @desig4=DesignationName from Employee_Record_L where Emp_Code=@Emp_Code
+																		select @desigid4=designatin_id from Designation_Leave where Designation_NAme=@desig4
+																		select @limit4=(select CL from Leave_Record where designatin_id=@desigid4)-
+																		isnull(	sum(Leave_day),0) from Employee_Leave where LeaveTyp_id=2 and Emp_Code=@Emp_Code 
+												
+																		if(@limit4-DATEDIFF(day, @FROM_DATE, @TO_DATE)>0)
+																			begin
+																				INSERT INTO Employee_Leave(Emp_Code, LeaveTyp_id, Documents, Leave_day, Reason,FROM_DATE,TO_DATE)
+																				VALUES(@Emp_Code,@LeaveTyp_id,@Documents,DATEDIFF(day, @FROM_DATE, @TO_DATE)+1,@Reason,@FROM_DATE,@TO_DATE)
+																				SET @PMSGOUT='1'
+																		    end
+																		else
+																			  begin
+																				 SET @PMSGOUT='3'
+																			  end
+
+																	END
+														END
+								 
+										END
+								
+
+							 END
+			        
+				   END
+		
+
+end
+	
+
+
+
+////////////////////////////
+USE [chikun1]
+GO
+
+/****** Object:  Table [dbo].[Employee_Record_L]    Script Date: 26-03-2023 21:50:56 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Employee_Record_L](
+	[Emp_Code] [int] NULL,
+	[Emp_Name] [varchar](50) NULL,
+	[DesignationName] [varchar](50) NULL
+) ON [PRIMARY]
+GO
+
+
+
+INSERT [dbo].[Employee_Record_L] ([Emp_Code], [Emp_Name], [DesignationName]) VALUES (101, N'Amon Sahu', N'SD')
+INSERT [dbo].[Employee_Record_L] ([Emp_Code], [Emp_Name], [DesignationName]) VALUES (102, N'Rahul', N'SSD')
+INSERT [dbo].[Employee_Record_L] ([Emp_Code], [Emp_Name], [DesignationName]) VALUES (103, N'Susu', N'MGR')
+
+//////////////////////////////////////
+USE [chikun1]
+GO
+
+/****** Object:  Table [dbo].[Leave_Type]    Script Date: 26-03-2023 21:51:38 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Leave_Type](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[Leave_Type] [varchar](10) NULL
+) ON [PRIMARY]
+GO
+
+INSERT [dbo].[Leave_Type] ([id], [Leave_Type]) VALUES (1, N'Medical')
+INSERT [dbo].[Leave_Type] ([id], [Leave_Type]) VALUES (2, N'Casual')
+
+////////////////////////////////////////
+USE [chikun1]
+GO
+
+/****** Object:  Table [dbo].[Designation_Leave]    Script Date: 26-03-2023 21:52:38 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Designation_Leave](
+	[designatin_id] [int] IDENTITY(1,1) NOT NULL,
+	[Designation_NAme] [varchar](50) NULL,
+ CONSTRAINT [PK_Designation_Leave] PRIMARY KEY CLUSTERED 
+(
+	[designatin_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
+
+INSERT [dbo].[Designation_Leave] ([designatin_id], [Designation_NAme]) VALUES (1, N'MGR')
+INSERT [dbo].[Designation_Leave] ([designatin_id], [Designation_NAme]) VALUES (2, N'SSD')
+INSERT [dbo].[Designation_Leave] ([designatin_id], [Designation_NAme]) VALUES (3, N'SD')
+////////////////////////////////////////////////
+USE [chikun1]
+GO
+
+/****** Object:  Table [dbo].[Leave_Record]    Script Date: 26-03-2023 21:53:38 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Leave_Record](
+	[id] [nchar](10) NOT NULL,
+	[designatin_id] [int] NULL,
+	[CL] [int] NULL,
+	[ML] [int] NULL
+) ON [PRIMARY]
+GO
+
+
+INSERT [dbo].[Leave_Record] ([id], [designatin_id], [CL], [ML]) VALUES (N'1         ', 1, 12, 12)
+INSERT [dbo].[Leave_Record] ([id], [designatin_id], [CL], [ML]) VALUES (N'2         ', 2, 10, 10)
+INSERT [dbo].[Leave_Record] ([id], [designatin_id], [CL], [ML]) VALUES (N'3         ', 3, 8, 8)
+
+
+//////////////////////////////////////////////
+USE [chikun1]
+GO
+
+/****** Object:  Table [dbo].[Employee_Leave]    Script Date: 26-03-2023 22:24:09 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Employee_Leave](
+	[Emp_ID] [int] IDENTITY(1,1) NOT NULL,
+	[Emp_Code] [int] NOT NULL,
+	[LeaveTyp_id] [int] NULL,
+	[Documents] [varchar](40) NULL,
+	[Leave_day] [int] NULL,
+	[Reason] [varchar](50) NULL,
+	[FROM_DATE] [date] NULL,
+	[TO_DATE] [date] NULL,
+ CONSTRAINT [PK_Employee_Leave_1] PRIMARY KEY CLUSTERED 
+(
+	[Emp_ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
+/////////////////////////
